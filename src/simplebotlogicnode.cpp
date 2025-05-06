@@ -12,22 +12,22 @@ SimpleBotLogicNode::SimpleBotLogicNode() : Node("custom_node"), _forward_audio(f
   RCLCPP_INFO(this->get_logger(), "Custom node has been started.");
 
   // Declare parameter for wakeword name
-  this->declare_parameter<std::string>("bot_name", "Hey Mycroft!");
+  this->declare_parameter<std::string>("bot_name", "Hey Mycroft");
   this->get_parameter("bot_name", _bot_name);
 
   // Subscriber to lowwi_ww (wake word)
-  _lowwi_sub = this->create_subscription<std_msgs::msg::String>(
-      "lowwi_ww", 10,
+  _lowwi_sub = this->create_subscription<lowwi::msg::WakeWord>(
+      "/lowwi_ww", 10,
       std::bind(&SimpleBotLogicNode::lowwi_callback, this, std::placeholders::_1));
 
   // Subscriber to audio_stamped
   _audio_sub = this->create_subscription<audio_tools::msg::AudioDataStamped>(
-      "audio_stamped", 10,
+      "/audio_stamped", 10,
       std::bind(&SimpleBotLogicNode::audio_callback, this, std::placeholders::_1));
 
   // Subscriber to voice activity
   _voice_activity_sub = this->create_subscription<audio_tools::msg::VoiceActivity>(
-      "/voice-activity", 10,
+      "/voice_activity", 10,
       std::bind(&SimpleBotLogicNode::voice_activity_callback, this, std::placeholders::_1));
 
   // Publisher to /whisper/audio_in
@@ -44,9 +44,9 @@ SimpleBotLogicNode::SimpleBotLogicNode() : Node("custom_node"), _forward_audio(f
   _timeout_timer->cancel(); // initially disabled
 }
 
-void SimpleBotLogicNode::lowwi_callback(const std_msgs::msg::String::SharedPtr msg) {
-  if (msg->data == _bot_name) {
-    RCLCPP_INFO(this->get_logger(), "Wake word detected: %s", msg->data.c_str());
+void SimpleBotLogicNode::lowwi_callback(const lowwi::msg::WakeWord::SharedPtr msg) {
+  if (msg->wakeword_name == _bot_name) {
+    RCLCPP_INFO(this->get_logger(), "Wake word detected: %s", msg->wakeword_name.c_str());
     _forward_audio = true;
     _timeout_timer->reset();
     _timeout_timer->reset(); // ensures it will count again from 10s

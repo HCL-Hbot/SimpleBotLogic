@@ -5,6 +5,7 @@
 #include <std_msgs/msg/string.hpp>
 #include <audio_tools/msg/audio_data_stamped.hpp>
 #include <audio_tools/msg/voice_activity.hpp>
+#include <lowwi/msg/wake_word.hpp>
 
 class SimpleBotLogicNode : public rclcpp::Node {
 public:
@@ -15,7 +16,7 @@ private:
   rclcpp::TimerBase::SharedPtr _timeout_timer;
 
   // Subscriptions
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr _lowwi_sub;
+  rclcpp::Subscription<lowwi::msg::WakeWord>::SharedPtr _lowwi_sub;
   rclcpp::Subscription<audio_tools::msg::AudioDataStamped>::SharedPtr _audio_sub;
   rclcpp::Subscription<audio_tools::msg::VoiceActivity>::SharedPtr _voice_activity_sub;
 
@@ -23,7 +24,7 @@ private:
   rclcpp::Publisher<audio_tools::msg::AudioDataStamped>::SharedPtr _audio_forward_pub;
 
   // Callbacks
-  void lowwi_callback(const std_msgs::msg::String::SharedPtr msg);
+  void lowwi_callback(const lowwi::msg::WakeWord::SharedPtr msg);
   void audio_callback(const audio_tools::msg::AudioDataStamped::SharedPtr msg);
   void voice_activity_callback(const audio_tools::msg::VoiceActivity::SharedPtr msg);
 
