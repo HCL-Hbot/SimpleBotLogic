@@ -1,5 +1,5 @@
 {
-    "name": "custom_pkg",
+    "name": "simplebotlogic",
     "cmake-args":[
         "-G Ninja"
     ]
