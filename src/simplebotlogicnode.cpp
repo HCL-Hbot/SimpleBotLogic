@@ -47,13 +47,44 @@ SimpleBotLogicNode::SimpleBotLogicNode() : Node("custom_node"), _forward_audio(f
 void SimpleBotLogicNode::lowwi_callback(const lowwi::msg::WakeWord::SharedPtr msg) {
   if (msg->wakeword_name == _bot_name) {
     RCLCPP_INFO(this->get_logger(), "Wake word detected: %s", msg->wakeword_name.c_str());
+
     _forward_audio = true;
     _timeout_timer->reset();
-    _timeout_timer->reset(); // ensures it will count again from 10s
+
+    // How many previous packets to include
+    constexpr size_t PREV_PACKET_COUNT = 10;
+
+    // Find iterator to first packet >= wakeword timestamp
+    rclcpp::Time wake_ts(msg->header.stamp);
+    auto it = std::find_if(
+      _audio_buffer.begin(), _audio_buffer.end(),
+      [wake_ts](const auto& pkt) {
+        return rclcpp::Time(pkt->header.stamp) >= wake_ts;
+      }
+    );
+
+    // Determine starting point N packets before
+    auto start_it = (it == _audio_buffer.end()) ? it : it;
+    for (int i = 0; i < PREV_PACKET_COUNT && start_it != _audio_buffer.begin(); ++i) {
+      --start_it;
+    }
+
+    // Publish from start_it to end
+    for (auto pub_it = start_it; pub_it != _audio_buffer.end(); ++pub_it) {
+      _audio_forward_pub->publish(**pub_it);
+    }
   }
 }
 
+
+
 void SimpleBotLogicNode::audio_callback(const audio_tools::msg::AudioDataStamped::SharedPtr msg) {
+  if (_audio_buffer.size() >= _max_buffer_size) {
+    _audio_buffer.pop_front();
+  }
+  _audio_buffer.push_back(msg);
+
+  // If forwarding is active, publish the current message
   if (_forward_audio) {
     _audio_forward_pub->publish(*msg);
   }

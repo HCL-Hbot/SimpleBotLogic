@@ -2,6 +2,7 @@
 #define SIMPLEBOTLOGIC_NODE_HPP
 
 #include <rclcpp/rclcpp.hpp>
+#include <deque>
 #include <std_msgs/msg/string.hpp>
 #include <audio_tools/msg/audio_data_stamped.hpp>
 #include <audio_tools/msg/voice_activity.hpp>
@@ -31,6 +32,9 @@ private:
   // Internal state
   bool _forward_audio;
   std::string _bot_name;
+  
+  std::deque<audio_tools::msg::AudioDataStamped::SharedPtr> _audio_buffer;
+  const size_t _max_buffer_size = 100;  // Store last ~100 packets (adjust as needed)
 };
 
 #endif /* SIMPLEBOTLOGIC_NODE_HPP */
