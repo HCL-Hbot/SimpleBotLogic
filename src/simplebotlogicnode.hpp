@@ -23,7 +23,8 @@ private:
 
   // Publisher
   rclcpp::Publisher<audio_tools::msg::AudioDataStamped>::SharedPtr _audio_forward_pub;
-
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr _display_command_pub;
+  
   // Callbacks
   void lowwi_callback(const lowwi::msg::WakeWord::SharedPtr msg);
   void audio_callback(const audio_tools::msg::AudioDataStamped::SharedPtr msg);

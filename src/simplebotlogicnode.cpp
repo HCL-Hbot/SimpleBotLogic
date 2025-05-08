@@ -34,6 +34,8 @@ SimpleBotLogicNode::SimpleBotLogicNode() : Node("custom_node"), _forward_audio(f
   _audio_forward_pub = this->create_publisher<audio_tools::msg::AudioDataStamped>(
       "/whisper/audio_in", 10);
 
+  _display_command_pub = this->create_publisher<std_msgs::msg::String>("/display_commands", 10);
+
   // Timer to stop forwarding after 10 seconds
   _timeout_timer = this->create_wall_timer(10s, [this]() {
     if (_forward_audio) {
@@ -73,6 +75,10 @@ void SimpleBotLogicNode::lowwi_callback(const lowwi::msg::WakeWord::SharedPtr ms
     for (auto pub_it = start_it; pub_it != _audio_buffer.end(); ++pub_it) {
       _audio_forward_pub->publish(**pub_it);
     }
+    std_msgs::msg::String cmd_msg;
+    cmd_msg.data = "think";
+    _display_command_pub->publish(cmd_msg);
+  
   }
 }
 
